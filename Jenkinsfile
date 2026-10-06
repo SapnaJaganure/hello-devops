@@ -1,37 +1,43 @@
 pipeline {
-    agent any
+agent any
 
-    stages {
+```
+stages {
 
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
+    stage('Install Dependencies') {
+        steps {
+            sh '''
+                python3 -m venv .venv
+                .venv/bin/pip install --upgrade pip
+                .venv/bin/pip install -r requirements.txt
+            '''
         }
+    }
 
-        stage('Install Dependencies') {
-            steps {
-                sh 'python3 -m pip install -r requirements.txt'
-            }
+    stage('Unit Test') {
+        steps {
+            sh '''
+                .venv/bin/pytest
+            '''
         }
+    }
 
-        stage('Unit Test') {
-            steps {
-                sh 'python3 -m pytest'
-            }
+    stage('Build') {
+        steps {
+            sh '''
+                zip -r hello-devops.zip app.py test_app.py requirements.txt
+            '''
         }
+    }
 
-        stage('Build') {
-            steps {
-                sh 'zip -r hello-devops.zip . -x ".git/*"'
-            }
-        }
-
-        stage('Archive') {
-            steps {
-                archiveArtifacts artifacts: 'hello-devops.zip',
-                                 fingerprint: true
-            }
+    stage('Archive') {
+        steps {
+            archiveArtifacts artifacts: 'hello-devops.zip',
+                             fingerprint: true
         }
     }
 }
+```
+
+}
+
